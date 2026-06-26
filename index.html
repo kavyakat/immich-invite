@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're invited 📸 Kavya's Photo Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --accent: #4250af;
+      --accent-dark: #2f3a8a;
+      --accent-soft: #eef0fb;
+      --coral: #e85a5a;
+      --amber: #f4a261;
+      --bg: #f5efe6;
+      --paper: #fcfaf6;
+      --card: #ffffff;
+      --ink: #1a1a23;
+      --muted: #6b6b78;
+      --border: #e9e3d8;
+      --code-bg: #1a1a23;
+      --code-ink: #f6f5f2;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Film grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.06;
+      mix-blend-mode: multiply;
+      z-index: 9999;
+    }
+
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-dark); }
+
+    /* Progress bar */
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--coral));
+      z-index: 10000;
+      transition: width 0.1s linear;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 56px 24px 96px;
+    }
+
+    /* Handwritten accent */
+    .scribble {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      color: var(--coral);
+    }
+
+    /* HERO */
+    .hero { text-align: center; margin-bottom: 56px; }
+
+    .photo-stack {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 28px;
+    }
+    .photo {
+      position: absolute;
+      width: 150px;
+      height: 170px;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.05);
+      padding: 12px 12px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      animation: bob 4s ease-in-out infinite;
+    }
+    .photo .img {
+      width: 100%;
+      height: 100%;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .photo:nth-child(1) {
+      transform: rotate(-9deg) translate(-40px, 5px);
+      left: 50%; top: 50%;
+      margin-left: -75px; margin-top: -85px;
+      animation-delay: 0s;
+    }
+    .photo:nth-child(2) {
+      transform: rotate(4deg) translate(2px, -5px);
+      left: 50%; top: 50%;
+      margin-left: -75px; margin-top: -85px;
+      animation-delay: 1.3s;
+      z-index: 1;
+    }
+    .photo:nth-child(3) {
+      transform: rotate(11deg) translate(42px, 8px);
+      left: 50%; top: 50%;
+      margin-left: -75px; margin-top: -85px;
+      animation-delay: 2.6s;
+    }
+    .photo:nth-child(1) .img { background: linear-gradient(135deg, #ffd6a5, #ff9a8b); }
+    .photo:nth-child(2) .img { background: linear-gradient(135deg, #a0c4ff, #9bf6ff); }
+    .photo:nth-child(3) .img { background: linear-gradient(135deg, #caffbf, #bdb2ff); }
+
+    @keyframes bob {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -6px; }
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      line-height: 1.05;
+      font-weight: 900;
+      margin: 0 0 14px;
+      letter-spacing: -0.02em;
+    }
+    .hero .sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 36px;
+    }
+
+    /* Form (polaroid style) */
+    .invite-card {
+      background: var(--card);
+      border-radius: 6px;
+      padding: 28px 28px 36px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+      transform: rotate(-0.8deg);
+      max-width: 460px;
+      margin: 0 auto;
+      text-align: left;
+      transition: transform 0.3s ease;
+    }
+    .invite-card:hover { transform: rotate(0deg); }
+
+    .invite-card .label-tag {
+      display: inline-block;
+      background: var(--coral);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .invite-card h2 {
+      margin: 0 0 18px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .invite-card label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .invite-card input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 15px;
+      background: var(--paper);
+      color: var(--ink);
+      margin-bottom: 16px;
+      transition: border 0.15s ease, background 0.15s ease;
+    }
+    .invite-card input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+    }
+    .invite-card button {
+      width: 100%;
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .invite-card button:hover {
+      background: var(--coral);
+      transform: translateY(-1px);
+    }
+    .invite-card button:active { transform: translateY(0); }
+    .invite-card .small {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    /* Confirmation banner shown after form submit */
+    .confirmation {
+      background: linear-gradient(135deg, var(--accent), #5d6dd1);
+      color: #fff;
+      padding: 22px 26px;
+      border-radius: 14px;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 30px rgba(66, 80, 175, 0.25);
+      display: none;
+      animation: slideIn 0.5s ease-out;
+    }
+    .confirmation.show { display: block; }
+    .confirmation h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .confirmation p {
+      margin: 0;
+      font-size: 14.5px;
+      opacity: 0.95;
+    }
+
+    .confirmation .reset-link {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #fff;
+      opacity: 0.75;
+      text-decoration: underline;
+    }
+    .confirmation .reset-link:hover { opacity: 1; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* "What's next" gate */
+    .next-steps {
+      opacity: 0.35;
+      pointer-events: none;
+      filter: blur(2px);
+      transition: opacity 0.6s ease, filter 0.6s ease;
+    }
+    .next-steps.unlocked {
+      opacity: 1;
+      pointer-events: auto;
+      filter: blur(0);
+    }
+    .lock-overlay {
+      text-align: center;
+      margin: 40px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .lock-overlay.hide { display: none; }
+
+    /* Intro cards */
+    .intro-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 56px;
+    }
+    .intro-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .intro-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+    }
+    .intro-card .emoji { font-size: 28px; margin-bottom: 6px; }
+    .intro-card h3 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .intro-card p {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    /* Steps */
+    .step {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 28px 28px 28px 92px;
+      position: relative;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.03);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .step.in-view { opacity: 1; transform: translateY(0); }
+    .step:nth-child(odd) { transform: translateY(20px) rotate(-0.4deg); }
+    .step:nth-child(even) { transform: translateY(20px) rotate(0.3deg); }
+    .step.in-view:nth-child(odd) { transform: translateY(0) rotate(-0.4deg); }
+    .step.in-view:nth-child(even) { transform: translateY(0) rotate(0.3deg); }
+
+    .step .num {
+      position: absolute;
+      left: 24px;
+      top: 26px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .step:hover .num {
+      transform: scale(1.1) rotate(-8deg);
+      background: var(--coral);
+    }
+
+    .step .step-emoji {
+      font-size: 24px;
+      margin-right: 6px;
+    }
+    .step h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .step p, .step li {
+      color: var(--muted);
+      font-size: 15.5px;
+    }
+    .step p { margin: 0 0 10px; }
+    .step ul { margin: 6px 0 0; padding-left: 22px; }
+    .step ul li { margin-bottom: 4px; }
+    .step strong { color: var(--ink); }
+
+    /* Platforms */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .platforms a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 500;
+      font-size: 14.5px;
+      transition: all 0.2s ease;
+    }
+    .platforms a:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      transform: translateY(-2px);
+    }
+    .platforms a .icon { font-size: 18px; width: 22px; text-align: center; }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      overflow-x: auto;
+      margin: 10px 0 0;
+    }
+
+    /* Open Immich (polaroid feel) */
+    .open-immich {
+      margin-top: 14px;
+      background: #fff;
+      border-radius: 6px;
+      padding: 14px 14px 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      transform: rotate(-1deg);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    .open-immich:hover { transform: rotate(0deg) scale(1.02); }
+    .open-immich .preview {
+      background: linear-gradient(135deg, #4250af 0%, #8b5cf6 100%);
+      height: 90px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .open-immich .preview::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 50%);
+    }
+    .open-immich .label {
+      font-family: 'Caveat', cursive;
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .open-immich a {
+      display: inline-block;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      word-break: break-all;
+    }
+    .open-immich a:hover { color: var(--coral); }
+    .open-immich .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* Callout */
+    .callout {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: #fff5e6;
+      border-left: 3px solid var(--amber);
+      border-radius: 8px;
+      font-size: 14px;
+      color: #6b4423;
+    }
+    .callout strong { color: var(--amber); }
+
+    /* Troubleshooting */
+    .troubleshooting {
+      margin-top: 56px;
+      padding: 28px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    }
+    .troubleshooting h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .troubleshooting details {
+      border-top: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .troubleshooting details:last-child { border-bottom: 1px solid var(--border); }
+    .troubleshooting summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      list-style: none;
+      position: relative;
+      padding-right: 24px;
+    }
+    .troubleshooting summary::-webkit-details-marker { display: none; }
+    .troubleshooting summary::after {
+      content: '+';
+      position: absolute;
+      right: 0;
+      top: -2px;
+      font-size: 20px;
+      color: var(--coral);
+      transition: transform 0.2s ease;
+    }
+    .troubleshooting details[open] summary::after { content: '−'; }
+    .troubleshooting details p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    footer .heart {
+      color: var(--coral);
+      display: inline-block;
+      animation: beat 1.5s ease-in-out infinite;
+    }
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    footer .hint {
+      margin-top: 14px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    /* Party mode */
+    body.party {
+      animation: party 0.5s linear infinite;
+    }
+    @keyframes party {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container { padding: 36px 18px 64px; }
+      .hero h1 { font-size: 34px; }
+      .hero .sub { font-size: 16px; }
+      .photo-stack { width: 200px; height: 200px; }
+      .photo { width: 130px; height: 150px; font-size: 50px; }
+      .intro-cards { grid-template-columns: 1fr; }
+      .step { padding: 24px 20px; }
+      .step .num { position: static; margin-bottom: 14px; }
+      .platforms { grid-template-columns: 1fr; }
+      .open-immich a { font-size: 15px; }
+      .invite-card { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="photo-stack">
+        <div class="photo"><div class="img">🌅</div></div>
+        <div class="photo"><div class="img">📷</div></div>
+        <div class="photo"><div class="img">🏖️</div></div>
+      </div>
+      <h1>You've been invited to <br><span class="scribble">Kavya's photo library</span></h1>
+      <p class="sub">A cozy corner of the internet for storing photos. Self-hosted. No ads. No creepy AI training on your face. Just photos.</p>
+
+      <!-- Form -->
+      <form class="invite-card" id="invite-form">
+        <span class="label-tag">Step 0 · Hello!</span>
+        <h2>Who are you? 👋</h2>
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Sam" required autocomplete="given-name" />
+        <label for="email">Your email</label>
+        <input type="email" id="email" name="email" placeholder="e.g. sam@example.com" required autocomplete="email" />
+        <button type="submit">Send Kavya a request →</button>
+        <p class="small">This pops open your email app with a pre-filled message. Kavya will invite you on Tailscale once he sees it.</p>
+      </form>
+    </section>
+
+    <!-- Confirmation banner (revealed after submit) -->
+    <div class="confirmation" id="confirmation">
+      <h3>Nice to meet you, <span id="friend-name">friend</span>! 👋</h3>
+      <p>Your request just landed in Kavya's inbox. While you wait for the Tailscale email, here's what's coming next 👇</p>
+      <a href="#" id="reset-link" class="reset-link">not you? start over</a>
+    </div>
+
+    <!-- Lock overlay -->
+    <div class="lock-overlay" id="lock-overlay">
+      ↑ fill the form above to unlock the rest of the guide 🔒
+    </div>
+
+    <!-- Next steps (gated until form submit) -->
+    <div class="next-steps" id="next-steps">
+
+      <section class="intro-cards">
+        <a class="intro-card" href="https://immich.app" target="_blank" rel="noopener">
+          <div class="emoji">📸</div>
+          <h3>What's Immich?</h3>
+          <p>Like Google Photos, but private. You'll use it to view (and upload) photos.</p>
+        </a>
+        <a class="intro-card" href="https://tailscale.com" target="_blank" rel="noopener">
+          <div class="emoji">🛡️</div>
+          <h3>What's Tailscale?</h3>
+          <p>A secret little tunnel that lets you reach the server safely. No public internet exposure.</p>
+        </a>
+      </section>
+
+      <!-- Step 1 -->
+      <section class="step">
+        <div class="num">1</div>
+        <h2><span class="step-emoji">📬</span>Check your inbox</h2>
+        <p>Once Kavya approves your request, you'll get an invitation email from <strong>Tailscale</strong>. Click the link to accept.</p>
+        <p>No Tailscale account yet? You'll sign up when you click the invite — use the same email you gave above.</p>
+      </section>
+
+      <!-- Step 2 -->
+      <section class="step">
+        <div class="num">2</div>
+        <h2><span class="step-emoji">📲</span>Install the Tailscale app</h2>
+        <p>Pick your device:</p>
+        <div class="platforms">
+          <a href="https://apps.apple.com/us/app/tailscale/id1475387142" target="_blank" rel="noopener"><span class="icon"></span> macOS</a>
+          <a href="https://apps.apple.com/us/app/tailscale/id1470499037" target="_blank" rel="noopener"><span class="icon"></span> iOS</a>
+          <a href="https://tailscale.com/download/windows" target="_blank" rel="noopener"><span class="icon">⊞</span> Windows</a>
+          <a href="https://play.google.com/store/apps/details?id=com.tailscale.ipn" target="_blank" rel="noopener"><span class="icon">▶</span> Android</a>
+        </div>
+        <p style="margin-top:14px;">On Linux, paste this in a terminal:</p>
+        <pre>curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up</pre>
+      </section>
+
+      <!-- Step 3 -->
+      <section class="step">
+        <div class="num">3</div>
+        <h2><span class="step-emoji">🔌</span>Plug in</h2>
+        <p>Open the Tailscale app and sign in with the same email. Once you see a green/connected light, you're on the network. <span class="scribble">You did it!</span></p>
+      </section>
+
+      <!-- Step 4 -->
+      <section class="step">
+        <div class="num">4</div>
+        <h2><span class="step-emoji">🚪</span>Open Immich</h2>
+        <p>Tap or click below. <strong>Tailscale must be connected</strong> for this to work.</p>
+        <div class="open-immich">
+          <div class="preview">📸</div>
+          <div class="label">click here →</div>
+          <a href="http://100.79.182.10:2283" target="_blank" rel="noopener" id="immich-link">http://100.79.182.10:2283</a>
+          <div class="hint">⚡ Only works while Tailscale is on.</div>
+        </div>
+      </section>
+
+      <!-- Step 5 -->
+      <section class="step">
+        <div class="num">5</div>
+        <h2><span class="step-emoji">🏡</span>Make yourself at home</h2>
+        <p>On the Immich login page, hit <strong>Sign up</strong> and fill in:</p>
+        <ul>
+          <li>Your name</li>
+          <li>Your email</li>
+          <li>A password (use a good one, please 🙏)</li>
+        </ul>
+        <div class="callout">
+          <strong>Heads up:</strong> if Immich says your account is awaiting admin approval, message Kavya and he'll bump it through.
+        </div>
+      </section>
+
+      <!-- Troubleshooting -->
+      <section class="troubleshooting">
+        <h2>Something not working? 🛠️</h2>
+        <details>
+          <summary>The page won't load</summary>
+          <p>Open the Tailscale app and confirm it's connected (green icon). If it looks off, sign out and back in, or toggle the switch.</p>
+        </details>
+        <details>
+          <summary>"Site can't be reached" error</summary>
+          <p>Double-check the URL is <code>http://100.79.182.10:2283</code> — that's <strong>http</strong>, not https. If it's right and still failing, ping Kavya — his PC might be off.</p>
+        </details>
+        <details>
+          <summary>Sign-up disabled or "awaiting approval"</summary>
+          <p>Just message Kavya — he can enable registration or approve you from the admin panel in seconds.</p>
+        </details>
+        <details>
+          <summary>I never got the Tailscale invite email</summary>
+          <p>Check spam. Then check spam again. Then poke Kavya.</p>
+        </details>
+      </section>
+
+    </div>
+
+    <footer>
+      <p>made with <span class="heart">♥</span> by Kavya</p>
+      <p class="hint">psst — try the konami code ↑↑↓↓←→←→BA</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // --- Progress bar ---
+    const progress = document.getElementById('progress');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      progress.style.width = pct + '%';
+    });
+
+    // --- Form submit (mailto) ---
+    const form = document.getElementById('invite-form');
+    const confirmation = document.getElementById('confirmation');
+    const friendName = document.getElementById('friend-name');
+    const nextSteps = document.getElementById('next-steps');
+    const lockOverlay = document.getElementById('lock-overlay');
+    const STORAGE_KEY = 'immichGuide.visitor';
+
+    // Restore previous visitor (skip the form on refresh)
+    const saved = (() => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); }
+      catch { return null; }
+    })();
+    if (saved && saved.name && saved.email) {
+      document.getElementById('name').value = saved.name;
+      document.getElementById('email').value = saved.email;
+      friendName.textContent = saved.name;
+      confirmation.classList.add('show');
+      nextSteps.classList.add('unlocked');
+      lockOverlay.classList.add('hide');
+    }
+
+    document.getElementById('reset-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      if (!name || !email) return;
+
+      // Persist for next visit
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, email }));
+
+      // Build mailto
+      const subject = `Immich access request: ${name}`;
+      const body =
+        `Hey Kavya,\n\n` +
+        `I'd love access to your Immich photo library.\n\n` +
+        `Name: ${name}\n` +
+        `Email: ${email}\n\n` +
+        `Thanks! 📸`;
+      const mailto = `mailto:kavyakat@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      // Personalize and unlock
+      friendName.textContent = name;
+      confirmation.classList.add('show');
+      nextSteps.classList.add('unlocked');
+      lockOverlay.classList.add('hide');
+
+      // Celebrate
+      celebrate();
+
+      // Open mail client (via temporary anchor — keeps current tab on page)
+      const a = document.createElement('a');
+      a.href = mailto;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Smooth scroll to next steps
+      setTimeout(() => {
+        confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 200);
+    });
+
+    // --- Intersection Observer for step fade-in ---
+    const steps = document.querySelectorAll('.step');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    steps.forEach(s => io.observe(s));
+
+    // --- Confetti on Immich link click ---
+    document.getElementById('immich-link').addEventListener('click', () => {
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#4250af', '#e85a5a', '#f4a261', '#a0c4ff', '#caffbf']
+      });
+    });
+
+    // --- Form-submit celebration ---
+    function celebrate() {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.4 },
+        colors: ['#4250af', '#e85a5a', '#f4a261']
+      });
+    }
+
+    // --- Konami code easter egg ---
+    const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let kIdx = 0;
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (key === konami[kIdx]) {
+        kIdx++;
+        if (kIdx === konami.length) {
+          partyMode();
+          kIdx = 0;
+        }
+      } else {
+        kIdx = 0;
+      }
+    });
+
+    function partyMode() {
+      document.body.classList.add('party');
+      const interval = setInterval(() => {
+        confetti({
+          particleCount: 40,
+          angle: Math.random() * 180,
+          spread: 80,
+          origin: { x: Math.random(), y: Math.random() * 0.5 },
+          colors: ['#4250af', '#e85a5a', '#f4a261', '#a0c4ff', '#caffbf', '#ffd6a5']
+        });
+      }, 250);
+      setTimeout(() => {
+        clearInterval(interval);
+        document.body.classList.remove('party');
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
