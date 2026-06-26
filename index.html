@@ -486,6 +486,38 @@
     }
     .callout strong { color: var(--amber); }
 
+    /* Copy-to-clipboard row */
+    .copy-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .copy-row code {
+      background: #fff;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+    .copy-btn {
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .copy-btn:hover { background: var(--coral); }
+    .copy-btn.copied { background: var(--accent); }
+
     /* Troubleshooting */
     .troubleshooting {
       margin-top: 56px;
@@ -682,7 +714,18 @@ sudo tailscale up</pre>
           <a href="https://play.google.com/store/apps/details?id=app.alextran.immich" target="_blank" rel="noopener"><span class="icon">▶</span> Android</a>
         </div>
         <div class="callout" style="margin-top:14px;">
-          <strong>In the app:</strong> when it asks for a server URL, paste <code>http://100.79.182.10:2283</code> — same as above.
+          <strong>Logging in on the app:</strong>
+          <ol style="margin:8px 0 6px 18px; padding:0;">
+            <li>Open the Immich app after installing.</li>
+            <li>You'll see a <strong>Server Endpoint URL</strong> field. Tap it and enter:
+              <div class="copy-row">
+                <code id="server-url">http://100.79.182.10:2283</code>
+                <button type="button" class="copy-btn" data-copy="http://100.79.182.10:2283">Copy</button>
+              </div>
+            </li>
+            <li>Tap <strong>Next / Login</strong>, then sign in with the account you create in step 5.</li>
+          </ol>
+          <p style="margin:6px 0 0; font-size:13px;">Don't tap the browser link above — it'll just open Safari/Chrome. You have to type/paste the URL inside the app.</p>
         </div>
       </section>
 
@@ -842,6 +885,25 @@ sudo tailscale up</pre>
         colors: ['#4250af', '#e85a5a', '#f4a261']
       });
     }
+
+    // --- Copy-to-clipboard buttons ---
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.copy;
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = btn.textContent;
+          btn.textContent = 'Copied ✓';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.classList.remove('copied');
+          }, 1500);
+        } catch (err) {
+          btn.textContent = 'Tap to select';
+        }
+      });
+    });
 
     // --- Konami code easter egg ---
     const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
