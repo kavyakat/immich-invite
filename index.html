@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>You're invited 📸 Kavya's Photo Library</title>
+  <title>You're invited 📸 Kavya's Photo Cloud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600;700&display=swap" rel="stylesheet" />
@@ -588,8 +588,8 @@
         <div class="photo"><div class="img">📷</div></div>
         <div class="photo"><div class="img">🏖️</div></div>
       </div>
-      <h1>You've been invited to <br><span class="scribble">Kavya's photo library</span></h1>
-      <p class="sub">A cozy corner of the internet for storing photos. Self-hosted. No ads. No creepy AI training on your face. Just photos.</p>
+      <h1>You've been invited to <br><span class="scribble">Kavya's photo cloud</span></h1>
+      <p class="sub">A cozy corner of the internet for backing up <strong>your</strong> photos. Self-hosted. No ads. No creepy AI training on your face. You get your own account — your photos stay yours.</p>
 
       <!-- Form -->
       <form class="invite-card" id="invite-form">
@@ -769,10 +769,10 @@ sudo tailscale up</pre>
 
       // Build mailto (email assembled from parts to avoid plaintext in HTML source)
       const _to = ['kavyakat', '+immich', '@', 'gmail', '.', 'com'].join('');
-      const subject = `Immich access request: ${name}`;
+      const subject = `Immich account request: ${name}`;
       const body =
         `Hey Kavya,\n\n` +
-        `I'd love access to your Immich photo library.\n\n` +
+        `I'd like to set up an account on your Immich.\n\n` +
         `Name: ${name}\n` +
         `Email: ${email}\n\n` +
         `Thanks! 📸`;
